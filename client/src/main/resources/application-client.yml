@@ -1,0 +1,63 @@
+resilience4j:
+  circuitbreaker:
+    instances:
+      IuGalleryArticleRepository-getAllArticleNo:
+        sliding-window-size: 3
+        minimum-number-of-calls: 2
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 60s
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        slow-call-rate-threshold: 50
+        automatic-transition-from-open-to-half-open-enabled: true
+      IuGalleryArticleRepository-findByArticleNo:
+        sliding-window-size: 3
+        minimum-number-of-calls: 2
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 60s
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        slow-call-rate-threshold: 50
+        automatic-transition-from-open-to-half-open-enabled: true
+      IuYoutubeVideoRepository-getAll:
+        sliding-window-size: 3
+        minimum-number-of-calls: 2
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 60s
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        slow-call-rate-threshold: 50
+        automatic-transition-from-open-to-half-open-enabled: true
+
+discord-client-webhook: ""
+youtube-client-api-key: ""
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: us-east-1
+      credentials:
+        access-key: accesskey
+        secret-key: secretkey
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  cloud:
+    aws:
+      endpoint: https://sqs.ap-northeast-2.amazonaws.com
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: ""
+        secret-key: ""

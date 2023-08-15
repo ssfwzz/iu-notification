@@ -1,0 +1,9 @@
+services:
+  spring-app:
+    container_name: spring-app
+    image: spring-app:custom
+    volumes:
+      - ./logs:/logs
+    environment:
+      SPRING_APPLICATION_JSON: '${SPRING_APPLICATION_JSON}'
+    command: java -jar app.jar

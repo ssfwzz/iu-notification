@@ -1,0 +1,35 @@
+spring:
+  profiles:
+    include:
+      - domain
+      - data
+      - client
+
+  main:
+    web-application-type: none
+
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: Scheduler
+            instanceId: AUTO
+          jobStore:
+            isClustered: true
+            clusterCheckinInterval: 20000
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
