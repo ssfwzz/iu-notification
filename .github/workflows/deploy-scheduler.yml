@@ -1,0 +1,59 @@
+name: deploy-scheduler
+
+on:
+  push:
+    branches: [ "release" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduler
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: build -x test
+
+      - name: docker build spring-app
+        run: |
+          docker build --tag spring-app:custom -f deploy/scheduler/Dockerfile .
+          docker save --output deploy/spring-app-image.tar spring-app:custom
+
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SCHEDULER_HOST }}
+          username: ${{ secrets.SCHEDULER_USERNAME }}
+          key: ${{ secrets.SCHEDULER_KEY }}
+          port: ${{ secrets.SCHEDULER_PORT }}
+          source: "deploy/spring-app-image.tar,deploy/docker-compose.yml"
+          target: "app"
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SCHEDULER_HOST }}
+          username: ${{ secrets.SCHEDULER_USERNAME }}
+          key: ${{ secrets.SCHEDULER_KEY }}
+          port: ${{ secrets.SCHEDULER_PORT }}
+          script: |
+            cd app/deploy
+            export SPRING_APPLICATION_JSON='${{ secrets.SPRING_APPLICATION_JSON }}'
+            docker-compose down
+            docker load -i spring-app-image.tar
+            docker-compose up -d
